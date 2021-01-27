@@ -7,54 +7,6 @@ from sklearn.metrics import mean_squared_log_error, mean_absolute_error, r2_scor
 import time
 
 
-# def main():
-# snp_data = pd.read_csv('data/snp_500_data.csv', parse_dates=["Date"])
-snp_data = pd.read_csv('data/11_year_snp_500.csv', parse_dates=["Date"])
-
-snp_data.sort_values(by=["Date"], inplace=True, ascending=True)
-snp_data["dataPointYear"] = snp_data["Date"].dt.year
-snp_data["dataPointMonth"] = snp_data["Date"].dt.month
-snp_data["dataPointDay"] = snp_data["Date"].dt.day
-snp_data["dataPointDayOfWeek"] = snp_data["Date"].dt.dayofweek
-snp_data["dataPointDayOfYear"] = snp_data["Date"].dt.dayofyear
-snp_data = snp_data.drop("Date", axis=1)
-
-# split data into training, validation, and test sets
-# print(f'Value Counts:\n {snp_data.dataPointYear.value_counts()}') # check for total values per year
-snp_val = snp_data[snp_data.dataPointYear == 2015]
-snp_train = snp_data[snp_data.dataPointYear != 2015]
-print(f'Len of validation: {len(snp_val)}. Len of training: {len(snp_train)}')
-
-x_train, y_train = snp_train.drop("Close", axis=1), snp_train.Close
-x_valid, y_valid = snp_val.drop("Close", axis=1), snp_val.Close
-
-# check both sets are same size and check y_train for correct type
-# print(x_train.shape, y_train.shape, x_valid.shape, y_valid.shape)
-# print(y_train)
-
-print('Dataset info:')
-print(snp_data.info())
-
-# check for cells with missing values
-# print(f'\nis na.... \n{snp_data.isna().sum()}')
-
-model = RandomForestRegressor(n_jobs=-1, random_state=27)
-start_time = time.time()
-model.fit(snp_data.drop("Close", axis=1), snp_data["Close"])
-stop_time = time.time()
-print(f'Total training time of {stop_time - start_time}s.')
-
-model_score = model.score(snp_data.drop("Close", axis=1), snp_data["Close"])
-print(f'Model score: {model_score}')
-
-# fig, ax = plt.subplots()
-# ax.plot(snp_data["Date"], snp_data["Close"])
-# ax.set(title='S&P 500 price over time',
-#        xlabel='Date',
-#        ylabel='Price')
-# plt.show()
-
-
 def rmsle(y_test, y_pred):
     # Calculate ROOT mean squared log error
     return np.sqrt(mean_squared_log_error(y_test, y_pred))
@@ -72,7 +24,59 @@ def show_scores(model):
               "Training R^2: ": r2_score(y_train, train_preds),
               "Valid R^2: ": r2_score(y_valid, valid_preds)}
 
-    return scores
+    for x, y in scores.items():
+        print(f'{x} \t\t.......{y}')
+
+
+# def main():
+# snp_data = pd.read_csv('data/snp_500_data.csv', parse_dates=["Date"])
+snp_data = pd.read_csv('data/snp500_2000_to_2021.csv', parse_dates=["Date"])
+
+snp_data.sort_values(by=["Date"], inplace=True, ascending=True)
+snp_data["dataPointYear"] = snp_data["Date"].dt.year
+snp_data["dataPointMonth"] = snp_data["Date"].dt.month
+snp_data["dataPointDay"] = snp_data["Date"].dt.day
+snp_data["dataPointDayOfWeek"] = snp_data["Date"].dt.dayofweek
+snp_data["dataPointDayOfYear"] = snp_data["Date"].dt.dayofyear
+snp_data = snp_data.drop("Date", axis=1)
+
+# split data into training, validation, and test sets
+# print(f'Value Counts:\n {snp_data.dataPointYear.value_counts()}') # check for total values per year
+snp_val = snp_data[snp_data.dataPointYear == 2015]
+snp_train = snp_data[snp_data.dataPointYear != 2015]
+print(f'Len of validation: {len(snp_val)}. Len of training: {len(snp_train)}\n')
+
+x_train, y_train = snp_train.drop("Close", axis=1), snp_train.Close
+x_valid, y_valid = snp_val.drop("Close", axis=1), snp_val.Close
+
+# check both sets are same size and check y_train for correct type
+# print(x_train.shape, y_train.shape, x_valid.shape, y_valid.shape)
+# print(y_train)
+
+print('Dataset info:')
+print(snp_data.info())
+print()
+
+# check for cells with missing values
+# print(f'\nis na.... \n{snp_data.isna().sum()}')
+
+model = RandomForestRegressor(n_jobs=-1, random_state=27)
+start_time = time.time()
+# model.fit(snp_data.drop("Close", axis=1), snp_data["Close"])
+model.fit(x_train, y_train)
+stop_time = time.time()
+print(f'Total training time of {stop_time - start_time}s.\n')
+show_scores(model)
+
+# model_score = model.score(snp_data.drop("Close", axis=1), snp_data["Close"])
+# print(f'Model score: {model_score}')
+
+# fig, ax = plt.subplots()
+# ax.plot(snp_data["Date"], snp_data["Close"])
+# ax.set(title='S&P 500 price over time',
+#        xlabel='Date',
+#        ylabel='Price')
+# plt.show()
 
 
 if __name__ == '__main__':
