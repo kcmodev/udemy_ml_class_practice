@@ -70,27 +70,41 @@ print()
 # show_scores(model)
 
 
-rf_grid = {'n_estimators': np.arange(10, 100, 10),
-           'max_depth': [None, 3, 5, 10],
-           'min_samples_split': np.arange(2, 20, 2),
-           'min_samples_leaf': np.arange(1, 20, 2),
-           'max_features': [0.5, 1, 'sqrt', 'auto']}
+# rf_grid = {'n_estimators': np.arange(10, 100, 10),
+#            'max_depth': [None, 3, 5, 10],
+#            'min_samples_split': np.arange(2, 20, 2),
+#            'min_samples_leaf': np.arange(1, 20, 2),
+#            'max_features': [0.5, 1, 'sqrt', 'auto']}
 
-rs_model = RandomizedSearchCV(RandomForestRegressor(n_jobs=-1,
-                                                    random_state=27),
-                              param_distributions=rf_grid,
-                              n_iter=100,
-                              cv=100,
-                              verbose=True)
+# rs_model = RandomizedSearchCV(RandomForestRegressor(n_jobs=-1,
+#                                                     random_state=27),
+#                               param_distributions=rf_grid,
+#                               n_iter=100,
+#                               cv=10,
+#                               verbose=True)
 
-start_time = time.time()
-print(rs_model.fit(x_train, y_train))
+# start_time = time.time()
+# print(rs_model.fit(x_train, y_train))
+# print('\n\n')
+# print(rs_model.best_params_)
+# print('\n\n')
+# show_scores(rs_model)
+# stop_time = time.time()
+# print(f'\n\nTotal training time of {stop_time - start_time}s.\n')
+
+
+ideal_model = RandomForestRegressor(n_estimators=10,
+                                    min_impurity_decrease=2,
+                                    min_samples_leaf=1,
+                                    max_features=0.5,
+                                    n_jobs=-1,
+                                    max_samples=None,
+                                    random_state=27)
+
+print(ideal_model.fit(x_train, y_train))
 print('\n\n')
-print(rs_model.best_params_)
-print('\n\n')
-show_scores(rs_model)
-stop_time = time.time()
-print(f'\n\nTotal training time of {stop_time - start_time}s.\n')
+show_scores(ideal_model)
+
 
 # model_score = model.score(snp_data.drop("Close", axis=1), snp_data["Close"])
 # print(f'Model score: {model_score}')
