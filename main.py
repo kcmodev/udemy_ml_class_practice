@@ -5,6 +5,7 @@ import numpy as np
 # Classification
 from sklearn.svm import LinearSVC
 from sklearn.datasets import make_classification
+from sklearn.model_selection import train_test_split
 
 # Regression
 from sklearn.ensemble import RandomForestRegressor
@@ -12,6 +13,54 @@ from sklearn.metrics import mean_squared_log_error, mean_absolute_error, r2_scor
 from sklearn.model_selection import RandomizedSearchCV
 
 import time
+
+selected_city = 'Kansas City'
+
+# Pull attributes from selected city only
+city_attributes = pd.read_csv('weather_data/city_attributes.csv')
+city_attributes = city_attributes.groupby(['City']).get_group(selected_city)
+
+try:
+    # Read previously generated dataframe for selected city
+    city_df = pd.read_csv(f'saved_dataframes/{selected_city}_weather_data')
+    print(f'File for {selected_city} already generated.')
+    print(city_df)
+
+except FileNotFoundError:
+    print(f'File for {selected_city} not found. Generating now...')
+
+    # Pull remaining climate data for the selected city
+    city_humidity = pd.read_csv('weather_data/humidity.csv', parse_dates=["datetime"])
+    city_pressure = pd.read_csv('weather_data/pressure.csv', parse_dates=["datetime"])
+    city_temp = pd.read_csv('weather_data/temperature.csv', parse_dates=["datetime"])
+    city_weather_desc = pd.read_csv('weather_data/weather_description.csv', parse_dates=["datetime"])
+    city_wind_speed = pd.read_csv('weather_data/wind_speed.csv', parse_dates=["datetime"])
+    city_wind_dir = pd.read_csv('weather_data/wind_direction.csv', parse_dates=["datetime"])
+
+    # Convert necessary data to csv
+
+    # Combine all elements of each DataFrame into one to be used as the training set.
+    # Also drops any NaN elements as they will not be needed.
+    city_df = pd.DataFrame({'Humidity': city_humidity[selected_city],
+                            'Pressure': city_pressure[selected_city],
+                            'Temperature': city_temp[selected_city],
+                            'Wind Speed': city_wind_speed[selected_city],
+                            'Wind Direction': city_wind_dir[selected_city],
+                            'Weather Description': city_weather_desc[selected_city]}).dropna()
+
+    city_df.to_csv(f'saved_dataframes/{selected_city}_weather_data', index=False)
+
+
+# Drop the weather description since that is the variable to be predicted
+x = city_df.drop('Weather Description', axis=1)
+
+# Retrieve only the weather description to test against the model's predictions.
+y = city_df['Weather Description']
+
+# Split x and y DataFrames into testing and training sets.
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2)
+
+# print(x_train.shape, x_test.shape, y_train.shape, y_test.shape)
 
 
 # def rmsle(y_test, y_pred):
@@ -33,47 +82,6 @@ import time
 #
 #     for x, y in scores.items():
 #         print(f'{x} \t\t.......{y}')
-
-
-# def main():
-# snp_data = pd.read_csv('data/snp500_2000_to_2021.csv', parse_dates=["Date"])
-
-selected_city = 'Kansas City'
-
-city_attributes = pd.read_csv('weather_data/city_attributes.csv')
-city_attributes = city_attributes.groupby(['City']).get_group(selected_city)
-print(city_attributes)
-
-city_humidity = pd.read_csv('weather_data/humidity.csv', parse_dates=["datetime"])
-print(city_humidity[['datetime', selected_city]].dropna())
-
-city_pressure = pd.read_csv('weather_data/pressure.csv', parse_dates=["datetime"])
-print(city_pressure[['datetime', selected_city]].dropna())
-
-city_temp = pd.read_csv('weather_data/temperature.csv', parse_dates=["datetime"])
-print(city_temp[['datetime', selected_city]].dropna())
-
-city_weather_desc = pd.read_csv('weather_data/weather_description.csv', parse_dates=["datetime"])
-print(city_weather_desc[['datetime', selected_city]].dropna())
-
-city_wind_speed = pd.read_csv('weather_data/wind_speed.csv', parse_dates=["datetime"])
-print(city_wind_speed[['datetime', selected_city]].dropna())
-
-city_wind_dir = pd.read_csv('weather_data/wind_direction.csv', parse_dates=["datetime"])
-print(city_wind_dir[['datetime', selected_city]].dropna())
-
-# for table in tables:
-#     print(f'\tdtypes...')
-#     print(table.dtypes)
-#     print('*' * 50)
-#     print('\tinfo...')
-#     print(table.info())
-#     print('*' * 50)
-#     print('\tdescribe...')
-#     print(table.describe())
-
-
-
 
 
 
